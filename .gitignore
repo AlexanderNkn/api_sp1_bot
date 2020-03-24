@@ -19,3 +19,6 @@ posts/static/
 media/
 
 db.sqlite3
+
+requirements_all.txt
+.vscode
