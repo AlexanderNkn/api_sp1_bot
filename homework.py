@@ -29,21 +29,21 @@ def parse_homework_status(homework):
 def get_homework_statuses(current_timestamp):
     headers = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
     params = {'from_date': current_timestamp}
-    homework_statuses = requests.get('https://praktikum.yandex.ru/api/user_api/homework_statuses/',
-                            headers=headers, params=params)
+    homework_statuses = requests.get(
+        'https://praktikum.yandex.ru/api/user_api/homework_statuses/',
+        headers=headers, 
+        params=params
+    )
     return homework_statuses.json()
 
 
 def send_message(message):
-    
     return bot.send_message(chat_id=CHAT_ID, text=message)
 
 
 def main():
-#    current_timestamp = int(time.time())  # начальное значение timestamp
-    # current_timestamp задам как 0, чтобы проверить heroku
-    current_timestamp = 0
-
+    current_timestamp = int(time.time())  # начальное значение timestamp
+    
     while True:
         try:
             new_homework = get_homework_statuses(current_timestamp)
