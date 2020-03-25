@@ -11,7 +11,9 @@ load_dotenv()
 PRACTICUM_TOKEN = os.getenv("PRACTICUM_TOKEN")
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-proxy = telegram.utils.request.Request(proxy_url='socks5://34.84.57.254:22080')
+proxy_url = os.getenv('proxy_url')
+
+proxy = telegram.utils.request.Request(proxy_url=proxy_url)
 bot = telegram.Bot(token=TELEGRAM_TOKEN, request=proxy)
 
 
@@ -48,7 +50,7 @@ def main():
             if new_homework.get('homeworks'):
                 send_message(parse_homework_status(new_homework.get('homeworks')[0]))
             current_timestamp = new_homework.get('current_date')  # обновить timestamp
-            time.sleep(300)  # опрашивать раз в пять минут
+            time.sleep(1200)  # опрашивать раз в 20 минут
 
         except Exception as e:
             print(f'Бот упал с ошибкой: {e}')
