@@ -1,3 +1,8 @@
+'''
+Модуль ищет на заданном сайте действующий прокси, и передает его по требованию.
+Список действующих прокси самообновляется.
+В случае невозможности получить новый действующий прокси, отправится смс об этом на телефон
+'''
 import requests
 import lxml
 from bs4 import BeautifulSoup
@@ -8,23 +13,64 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
 }
 
-def get_valid_proxy_url(url, headers):
-    # получение списка действующих прокси
+def get_raw_proxy_list(proxy_list_old=[]):
+    # получение списка прокси, пока не использовавшихся в работе
+    # на данном этапе валидность прокси не проверяется, только уникальность
     # парсинг страницы
     r = requests.get(url=url, headers=headers)
     soup = BeautifulSoup(r.content, 'lxml')
     tags = soup.find_all(attrs={'onclick':'SelectProxy(this)'})
-    # получение списка прокси и проверка их
-    tags_count = 10 if len(tags) >=  10 else len(tags)
-    proxy_url_raw = [tags[i]['value'] for i in range(tags_count)]
-    proxy_url_valid = []
-    for url in proxy_url_raw:
-        try:
-            r = requests.get(url='http://' + url, headers=headers)
-            r.raise_for_status
-            proxy_url_valid.append(url)
-        except requests.exceptions.RequestException:
-            continue
-    return proxy_url_valid
+    # получение списка прокси и сверка их со старым списком
+    count_new = 0   #счетчик количества новых прокси (создаем лист из 5)
+    count_all = -1   #счетчик прокси перебранных на сайте
+    proxy_list_raw_new = []
+    while count_new < 5:
+        count_all += 1
+        if tags[count_all]['value'] not in proxy_list_old: # проверяем, не использовался ли уже этот прокси
+            proxy_list_raw_new.append(tags[count_all]['value']) # создаем список из новых прокси
+            count_new += 1
+    proxy_list_old += proxy_list_raw_new #формируем список когда-либо использовавшихся прокси
+    print(proxy_list_old, proxy_list_raw_new)
+    return proxy_list_old, proxy_list_raw_new
+    
+    
+# def get_valid_proxy_url(proxy_url_raw_new):
+#     # из списка
+#     proxy_url_valid = []
+#     for url in proxy_url_raw_new:
+#         try:
+#             r = requests.get(url='http://' + url, headers=headers)
+#             r.raise_for_status
+#             proxy_url_valid.append(url)
+#         except requests.exceptions.RequestException:
+#             continue
+#     print(proxy_url_valid)
+#     return proxy_url_valid
 
-get_valid_proxy_url(url, headers)
+# proxy_url_old, proxy_url_raw_new = get_raw_proxy_url(url, headers, proxy_url_old=proxy_url_old)
+# proxy_url = get_valid_proxy_url(proxy_url_raw_new)
+
+def get_valid_proxy_url(proxy_list_raw_new):
+    while True:
+        for url in proxy_list_raw_new:
+            count_invalid = 0   # счетчик нерабочих прокси
+            try:
+                r = requests.get(url='http://' + url, headers=headers)
+                r.raise_for_status
+                return url
+            except requests.exceptions.RequestException:
+                count_invalid += 1
+                # если в списке все прокси нерабочие, перенаправляем за новым списком
+                if count_invalid == len(proxy_list_raw_new):
+                    get_raw_proxy_list(url, headers, proxy_list_old=[])
+                    break
+                continue
+
+
+proxy_list_old, proxy_list_raw_new = get_raw_proxy_list()
+
+def get_raw_proxy_list():
+    valid_url = get_valid_proxy_url(proxy_list_raw_new)
+    print(valid_url)
+
+get_raw_proxy_list()
