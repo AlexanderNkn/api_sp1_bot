@@ -30,7 +30,7 @@ def get_raw_proxy_list(proxy_list_old=[]):
             proxy_list_raw_new.append(tags[count_all]['value']) # создаем список из новых прокси
             count_new += 1
     proxy_list_old += proxy_list_raw_new #формируем список когда-либо использовавшихся прокси
-    print(proxy_list_old, proxy_list_raw_new)
+#    print(proxy_list_old, proxy_list_raw_new)
     return proxy_list_old, proxy_list_raw_new
     
     
@@ -50,27 +50,49 @@ def get_raw_proxy_list(proxy_list_old=[]):
 # proxy_url_old, proxy_url_raw_new = get_raw_proxy_url(url, headers, proxy_url_old=proxy_url_old)
 # proxy_url = get_valid_proxy_url(proxy_url_raw_new)
 
-def get_valid_proxy_url(proxy_list_raw_new):
+def get_valid_proxy_url(proxy_list_raw_new, used_url=[]):
     while True:
+        count_invalid = 0   # счетчик нерабочих прокси
         for url in proxy_list_raw_new:
-            count_invalid = 0   # счетчик нерабочих прокси
-            try:
-                r = requests.get(url='http://' + url, headers=headers)
-                r.raise_for_status
-                return url
-            except requests.exceptions.RequestException:
+            if url not in used_url:
+                try:
+                    r = requests.get(url='http://' + url, headers=headers)
+                    r.raise_for_status
+                    return url
+                except requests.exceptions.RequestException:
+                    count_invalid += 1
+                    # если в списке все прокси нерабочие, перенаправляем за новым списком
+                    if count_invalid == len(proxy_list_raw_new):
+                        get_raw_proxy_list(url, headers, proxy_list_old=[])
+                        break
+                    continue
+            else:
                 count_invalid += 1
                 # если в списке все прокси нерабочие, перенаправляем за новым списком
                 if count_invalid == len(proxy_list_raw_new):
-                    get_raw_proxy_list(url, headers, proxy_list_old=[])
+                    proxy_list_raw_new = get_raw_proxy_list(proxy_list_old=proxy_list_old)[1]
                     break
                 continue
 
 
 proxy_list_old, proxy_list_raw_new = get_raw_proxy_list()
 
-def get_raw_proxy_list():
-    valid_url = get_valid_proxy_url(proxy_list_raw_new)
-    print(valid_url)
+def get_proxy(used_url=[]):
+    valid_url = get_valid_proxy_url(proxy_list_raw_new, used_url)
+    if valid_url not in used_url:
+        used_url.append(valid_url)
+        print(valid_url)
+        return used_url
 
-get_raw_proxy_list()
+used_url = get_proxy()
+
+get_proxy(used_url)
+get_proxy(used_url)
+get_proxy(used_url)
+get_proxy(used_url)
+get_proxy(used_url)
+get_proxy(used_url)
+get_proxy(used_url)
+get_proxy(used_url)
+get_proxy(used_url)
+get_proxy(used_url)
