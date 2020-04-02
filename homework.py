@@ -12,9 +12,12 @@ PRACTICUM_TOKEN = os.getenv("PRACTICUM_TOKEN")
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 PROXY_URL = os.getenv('proxy_url')
+NEED_PROXY = os.getenv('need_proxy')
 
-proxy = telegram.utils.request.Request(proxy_url=PROXY_URL)
-bot = telegram.Bot(token=TELEGRAM_TOKEN, request=proxy)
+if NEED_PROXY:
+    proxy = telegram.utils.request.Request(proxy_url=PROXY_URL)
+bot = telegram.Bot(token=TELEGRAM_TOKEN, request=proxy or None)
+
 
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
