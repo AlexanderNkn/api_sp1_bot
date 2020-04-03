@@ -6,50 +6,39 @@ import json
 import os
 import time
 
-import lxml
 import requests
 import telegram
-from bs4 import BeautifulSoup
+from telegram.error import TimedOut, NetworkError
 from dotenv import load_dotenv
+
+from proxy import get_raw_proxy_list
+
 
 load_dotenv()
 
 PRACTICUM_TOKEN = os.getenv("PRACTICUM_TOKEN")
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-PROXY_SITE_URL = os.getenv('PROXY_SITE_URL')
-headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.149 Safari/537.36',
-    }
+NEED_PROXY = os.getenv('need_proxy')
 
-def get_raw_proxy_list():
-    # получение списка прокси
-    # на данном этапе валидность прокси не проверяется, только уникальность
-    # парсинг страницы
-    r = requests.get(url=PROXY_SITE_URL, headers=headers)
-    soup = BeautifulSoup(r.content, 'lxml')
-    tags = soup.find_all(attrs={'onclick':'SelectProxy(this)'})
-    # получение списка прокси 
-    raw_proxy_list = [tags[i]['value'] for i in range(len(tags))]
-    print(raw_proxy_list)
-    return raw_proxy_list
 
-raw_proxy_list = get_raw_proxy_list()
-
-def get_valid_proxy_url(raw_proxy_list):
+def get_telegram_bot(used_url, raw_proxy_list):
+    if used_url:
+        print(f'URL {used_url} больше не работает')
+    if used_url in raw_proxy_list:
+        raw_proxy_list.remove(used_url)
+        print(f'Осталось {len(raw_proxy_list)} прокси')
+        if len(raw_proxy_list) == 0:
+            raw_proxy_list = get_raw_proxy_list()
+    if len(raw_proxy_list) == 25:
+        print('Получен новый список прокси')
     for url in raw_proxy_list:
-        try:
-            url = 'http://' + url
-            r = requests.get(url, headers=headers)
-            r.raise_for_status
-            return url
-        except requests.exceptions.RequestException:
-            continue
+        proxy_url = 'socks5://' + url
+        print(f'новый {proxy_url}')
+        proxy = telegram.utils.request.Request(proxy_url=proxy_url)
+        bot = telegram.Bot(token=TELEGRAM_TOKEN, request=proxy or None)
+        return bot, url, raw_proxy_list
 
-proxy_url=get_valid_proxy_url(raw_proxy_list)
-
-proxy = telegram.utils.request.Request(proxy_url=proxy_url)
-bot = telegram.Bot(token=TELEGRAM_TOKEN, request='http://31.45.243.11:80')
 
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')
@@ -82,7 +71,15 @@ def get_homework_statuses(current_timestamp):
 
 
 def send_message(message):
-    return bot.send_message(chat_id=CHAT_ID, text=message)
+    raw_proxy_list = get_raw_proxy_list()
+    bot, url, raw_proxy_list = get_telegram_bot(used_url=None, raw_proxy_list=raw_proxy_list)
+    while True:
+        try:
+            return bot.send_message(chat_id=CHAT_ID, text=message)
+        except (TimedOut, NetworkError):
+            used_url = url
+            bot, url, raw_proxy_list = get_telegram_bot(used_url, raw_proxy_list)
+            continue
 
 
 def main():
