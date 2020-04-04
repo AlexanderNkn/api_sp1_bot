@@ -22,7 +22,6 @@ load_dotenv()
 PRACTICUM_TOKEN = os.getenv("PRACTICUM_TOKEN")
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
-NEED_PROXY = os.getenv('need_proxy')
 
 
 def get_telegram_bot(used_url, raw_proxy_list):
@@ -33,18 +32,26 @@ def get_telegram_bot(used_url, raw_proxy_list):
     if used_url in raw_proxy_list:
         raw_proxy_list.remove(used_url)
         print(f'Осталось {len(raw_proxy_list)} прокси')
-        # получаем новый список с прокси, если старый больше не работает
-        if len(raw_proxy_list) == 0:
-            raw_proxy_list = get_raw_proxy_list()
+    # получаем новый список с прокси, если старый больше не работает
+    if len(raw_proxy_list) == 0:
+        raw_proxy_list = get_raw_proxy_list()
     if len(raw_proxy_list) == 25:
         print('Получен новый список прокси')
-    # берем прокси из списка и создаем экземпляр телеграмм бота
-    for url in raw_proxy_list:
-        proxy_url = 'socks5://' + url
-        print(f'новый {proxy_url}')
-        proxy = telegram.utils.request.Request(proxy_url=proxy_url)
-        bot = telegram.Bot(token=TELEGRAM_TOKEN, request=proxy or None)
-        return bot, url, raw_proxy_list
+    # если сайт с прокси не работает, запускаем телеграм бот без прокси,
+    # так как heroku может без прокси работать с telegramm
+    if raw_proxy_list:
+        # берем прокси из списка и создаем экземпляр телеграм бота
+        print('Бот работает через прокси')
+        for url in raw_proxy_list:
+            proxy_url = 'socks5://' + url
+            print(f'новый {proxy_url}')
+            proxy = telegram.utils.request.Request(proxy_url=proxy_url)
+            bot = telegram.Bot(token=TELEGRAM_TOKEN, request=proxy)
+            return bot, url, raw_proxy_list
+    # запускаем бот без прокси, если с сайта не получен список
+    else:
+        print('Бот работает БЕЗ прокси')
+        return telegram.Bot(token=TELEGRAM_TOKEN), '', []
 
 
 def parse_homework_status(homework):
@@ -83,7 +90,7 @@ def send_message(message):
     '''Отправка сообщения через телеграмм бот. В случае неудачной отправки
     запрашивается новый прокси'''
     # запрос на создание экземпляра телеграмм бота
-    raw_proxy_list = get_raw_proxy_list()
+    raw_proxy_list = []
     bot, url, raw_proxy_list = get_telegram_bot(used_url=None, raw_proxy_list=raw_proxy_list)
     while True:
         try:
