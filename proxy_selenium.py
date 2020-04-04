@@ -11,13 +11,14 @@ from selenium import webdriver
 from twilio_sms import sms_sender # импортируем функцию отправки сообщений через твилио
 
 
-GOOGLE_CHROME_PATH = '/app/.apt/usr/bin/google_chrome'
+GOOGLE_CHROME_BIN = '/app/.apt/usr/bin/google_chrome'
 CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
 
 chrome_options = webdriver.ChromeOptions()
+chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 chrome_options.add_argument('--no-sandbox')
-chrome_options.binary_location = GOOGLE_CHROME_PATH
+chrome_options.binary_location = GOOGLE_CHROME_BIN
 
 def parse_proxy_site():
     '''
