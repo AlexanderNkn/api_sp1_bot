@@ -2,3 +2,5 @@ python-telegram-bot
 requests
 python-dotenv
 PySocks
+selenium
+twilio

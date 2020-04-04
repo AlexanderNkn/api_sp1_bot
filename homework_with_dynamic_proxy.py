@@ -14,8 +14,8 @@ import telegram
 from telegram.error import TimedOut, NetworkError
 from dotenv import load_dotenv
 
-from proxy import get_raw_proxy_list
-
+# from proxy import get_raw_proxy_list   это для локальной версии
+from proxy_selenium import get_raw_proxy_list
 
 load_dotenv()
 

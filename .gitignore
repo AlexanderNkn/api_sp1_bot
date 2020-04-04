@@ -21,4 +21,5 @@ media/
 db.sqlite3
 
 requirements_all.txt
+requirements_yaprakt.txt
 .vscode
