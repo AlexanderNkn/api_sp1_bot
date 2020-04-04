@@ -5,28 +5,30 @@
 При использовании lxml и BeautifulSoup4 порты у адресов прокси с этого сайта 
 отображались в зашифрованном виде.
 '''
+import os
 
 from selenium import webdriver
 
-from twilio_sms import sms_sender # импортируем функцию отправки сообщений через твилио
+from twilio_sms import \
+    sms_sender  # импортируем функцию отправки сообщений через твилио
 
+CHROMEDRIVER_PATH = "/app/.chromedriver/bin/chromedriver"
 
-GOOGLE_CHROME_BIN = '/app/.apt/usr/bin/google_chrome'
-CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
-
-chrome_options = webdriver.ChromeOptions()
-chrome_options.add_argument('--headless')
-chrome_options.add_argument('--disable-gpu')
-chrome_options.add_argument('--no-sandbox')
-chrome_options.binary_location = GOOGLE_CHROME_BIN
+chrome_bin = os.environ.get('GOOGLE_CHROME_BIN', "chromedriver")
+options = webdriver.ChromeOptions()
+options.binary_location = chrome_bin
+options.add_argument("--disable-gpu")
+options.add_argument("--no-sandbox")
+options.add_argument('headless')
+options.add_argument('window-size=1200x600')
 
 def parse_proxy_site():
     '''
     Получаем список прокси с сайта без проверки на валидность
     '''
-    browser = webdriver.Chrome(
+    driver = webdriver.Chrome(
         executable_path=CHROMEDRIVER_PATH, 
-        chrome_options=chrome_options
+        chrome_options=options
     )
     driver.get('http://spys.one/socks/')
     # класс, в котором находятся прокси, называется 'spy14' 
