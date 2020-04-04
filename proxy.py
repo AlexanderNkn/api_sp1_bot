@@ -8,10 +8,12 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options # можно добавить опции, например --headless
 
+from twilio_sms import sms_sender # импортируем функцию отправки сообщений через твилио
+
 
 chrome_options = Options()
 
-def get_raw_proxy_list():
+def parse_proxy_site():
     '''
     Получаем список прокси с сайта без проверки на валидность
     '''
@@ -34,4 +36,12 @@ def get_raw_proxy_list():
             if i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9,':'] and len(item) > 5:
                 url_list.append(item)
     driver.close()
+    return url_list
+
+def get_raw_proxy_list():
+    '''забирает список прокси, а в случае невозможности, запускает отправку
+    сообщения об ошибке'''
+    url_list = parse_proxy_site()
+    if not url_list:
+        sms_sender('Список прокси для телеграмм бота устарел. Сайт с прокси не отвечает.')
     return url_list
