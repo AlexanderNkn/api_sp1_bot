@@ -1,6 +1,9 @@
-# начал совмещать основного бота с модулем получения списка прокси. Но выяснил,
-# что нет нормальных сайтов с валидными прокси. Из-за этого посыпались ошибки от 
-# бота телеграмма. Пока приостановил, жду нормального списка для продолжения работы.
+'''
+Модуль проверяет домашнюю работу на яндекс.практикуме
+и отправляет сообщение о статусе новой работы на телеграмм.
+При отправке используется прокси. Если прокси из списка устарели и 
+больше не работают, запрашивается новый список. 
+'''
 
 import json
 import os
@@ -23,15 +26,19 @@ NEED_PROXY = os.getenv('need_proxy')
 
 
 def get_telegram_bot(used_url, raw_proxy_list):
+    '''создаем экземпляр телеграмм бота с одним из прокси из списка'''
+    # проверка использованного прокси, чтобы не использовать повторно
     if used_url:
         print(f'URL {used_url} больше не работает')
     if used_url in raw_proxy_list:
         raw_proxy_list.remove(used_url)
         print(f'Осталось {len(raw_proxy_list)} прокси')
+        # получаем новый список с прокси, если старый больше не работает
         if len(raw_proxy_list) == 0:
             raw_proxy_list = get_raw_proxy_list()
     if len(raw_proxy_list) == 25:
         print('Получен новый список прокси')
+    # берем прокси из списка и создаем экземпляр телеграмм бота
     for url in raw_proxy_list:
         proxy_url = 'socks5://' + url
         print(f'новый {proxy_url}')
@@ -41,6 +48,7 @@ def get_telegram_bot(used_url, raw_proxy_list):
 
 
 def parse_homework_status(homework):
+    '''Проверка статуса домашней работы и выбор соответствующего сообщения'''
     homework_name = homework.get('homework_name')
     if homework.get('status') == 'rejected':
         verdict = 'К сожалению в работе нашлись ошибки.'
@@ -50,6 +58,7 @@ def parse_homework_status(homework):
 
 
 def get_homework_statuses(current_timestamp):
+    '''Запрос статуса домашней работы на яндекс.практикуме'''
     headers = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
     params = {'from_date': current_timestamp}
     while True:
@@ -71,11 +80,15 @@ def get_homework_statuses(current_timestamp):
 
 
 def send_message(message):
+    '''Отправка сообщения через телеграмм бот. В случае неудачной отправки
+    запрашивается новый прокси'''
+    # запрос на создание экземпляра телеграмм бота
     raw_proxy_list = get_raw_proxy_list()
     bot, url, raw_proxy_list = get_telegram_bot(used_url=None, raw_proxy_list=raw_proxy_list)
     while True:
         try:
             return bot.send_message(chat_id=CHAT_ID, text=message)
+        # в случае неудачной отправки, запрашиваем новый экземпляр бота    
         except (TimedOut, NetworkError):
             used_url = url
             bot, url, raw_proxy_list = get_telegram_bot(used_url, raw_proxy_list)
