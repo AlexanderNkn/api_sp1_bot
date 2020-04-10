@@ -14,10 +14,11 @@ CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 PROXY_URL = os.getenv('proxy_url')
 NEED_PROXY = os.getenv('need_proxy')
 
-if NEED_PROXY:
+if NEED_PROXY == 'True':
     proxy = telegram.utils.request.Request(proxy_url=PROXY_URL)
-bot = telegram.Bot(token=TELEGRAM_TOKEN, request=proxy or None)
-
+    bot = telegram.Bot(token=TELEGRAM_TOKEN, request=proxy)
+else:
+    bot = telegram.Bot(token=TELEGRAM_TOKEN)
 
 def parse_homework_status(homework):
     homework_name = homework.get('homework_name')

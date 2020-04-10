@@ -24,7 +24,7 @@ TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 TIME_NOT_0 = os.getenv('TIME_NOT_0') # можно установить время на 0,
                                      # чтобы всегда выгружалась последняя домашняя работа
-
+NEED_PROXY = os.getenv('need_proxy')
 
 def get_telegram_bot(used_url, raw_proxy_list):
     '''создаем экземпляр телеграмм бота с одним из прокси из списка'''
@@ -91,7 +91,11 @@ def get_homework_statuses(current_timestamp):
 def send_message(message):
     '''Отправка сообщения через телеграмм бот. В случае неудачной отправки
     запрашивается новый прокси'''
-    # запрос на создание экземпляра телеграмм бота
+    # отключаем вручную прокси и высылаем сообщение без него 
+    if NEED_PROXY == 'False':
+        bot = telegram.Bot(token=TELEGRAM_TOKEN)
+        return bot.send_message(chat_id=CHAT_ID, text=message)
+    # если хотим работать через прокси - запрос на создание экземпляра телеграмм бота
     raw_proxy_list = []
     bot, url, raw_proxy_list = get_telegram_bot(used_url=None, raw_proxy_list=raw_proxy_list)
     while True:
@@ -105,7 +109,7 @@ def send_message(message):
 
 
 def main():
-    current_timestamp = int(time.time()) if TIME_NOT_0 else 0  # начальное значение timestamp
+    current_timestamp = int(time.time()) if TIME_NOT_0 == 'True' else 0  # начальное значение timestamp
     
     while True:
         try:
