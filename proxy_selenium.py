@@ -48,8 +48,13 @@ def parse_proxy_site():
 
 def get_raw_proxy_list():
     '''забирает список прокси, а в случае невозможности, запускает отправку
-    сообщения об ошибке'''
-    url_list = parse_proxy_site()
-    if not url_list:
-        sms_sender('Список прокси для телеграмм бота устарел. Сайт с прокси не отвечает.')
-    return url_list
+    сообщения об ошибке.
+    '''
+    try:
+        url_list = parse_proxy_site()
+        if not url_list:
+            sms_sender('Список прокси для телеграмм бота устарел. Сайт с прокси не отвечает.')
+        return url_list
+    except Exception as e:
+        sms_sender(f'Модуль proxy упал с ошибкой: {e}')
+        return []
