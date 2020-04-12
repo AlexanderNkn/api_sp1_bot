@@ -12,15 +12,16 @@ from selenium import webdriver
 from twilio_sms import \
     sms_sender  # импортируем функцию отправки сообщений через твилио
 
-CHROMEDRIVER_PATH = "/app/.chromedriver/bin/chromedriver"
+CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
 
-chrome_bin = os.environ.get('GOOGLE_CHROME_BIN', "chromedriver")
+#chrome_bin = os.environ.get('GOOGLE_CHROME_BIN', 'chromedriver')
 options = webdriver.ChromeOptions()
-options.binary_location = chrome_bin
-options.add_argument("--disable-gpu")
-options.add_argument("--no-sandbox")
-options.add_argument('headless')
-options.add_argument('window-size=1200x600')
+#options.binary_location = chrome_bin
+options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
+options.add_argument('--disable-gpu')
+options.add_argument('--no-sandbox')
+options.add_argument('--headless')
+#options.add_argument('window-size=1200x600')
 
 def parse_proxy_site():
     '''

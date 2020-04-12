@@ -19,7 +19,7 @@ from proxy_selenium import get_raw_proxy_list
 
 load_dotenv()
 
-PRACTICUM_TOKEN = os.getenv("PRACTICUM_TOKEN")
+PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
 TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
 CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
 TIME_NOT_0 = os.getenv('TIME_NOT_0') # можно установить время на 0,
