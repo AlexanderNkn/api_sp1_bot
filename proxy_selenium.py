@@ -1,7 +1,7 @@
 '''
 Эта версия proxy.py для размещения на selenium.
 Модуль ищет на сайте http://spys.one/socks/ прокси и выгружает их в список. 
-!!! Можно использовать на страницах с javascript, так как для парсинга используется selenium.
+Можно использовать на страницах с javascript, так как для парсинга используется selenium.
 При использовании lxml и BeautifulSoup4 порты у адресов прокси с этого сайта 
 отображались в зашифрованном виде.
 '''
@@ -14,14 +14,11 @@ from twilio_sms import \
 
 CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
 
-#chrome_bin = os.environ.get('GOOGLE_CHROME_BIN', 'chromedriver')
 options = webdriver.ChromeOptions()
-#options.binary_location = chrome_bin
 options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
 options.add_argument('--disable-gpu')
 options.add_argument('--no-sandbox')
 options.add_argument('--headless')
-#options.add_argument('window-size=1200x600')
 
 def parse_proxy_site():
     '''
@@ -48,7 +45,8 @@ def parse_proxy_site():
     return url_list
 
 def get_raw_proxy_list():
-    '''забирает список прокси, а в случае невозможности, запускает отправку
+    '''
+    забирает список прокси, а в случае невозможности, запускает отправку
     сообщения об ошибке.
     '''
     try:
@@ -57,5 +55,5 @@ def get_raw_proxy_list():
             sms_sender('Список прокси для телеграмм бота устарел. Сайт с прокси не отвечает.')
         return url_list
     except Exception as e:
-        sms_sender(f'Модуль proxy упал с ошибкой: {e}')
+        sms_sender(f'Модуль proxy_selenium упал с ошибкой: {e}')
         return []

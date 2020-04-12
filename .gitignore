@@ -23,3 +23,9 @@ db.sqlite3
 requirements_all.txt
 requirements_yaprakt.txt
 .vscode
+tests/
+homework.py
+proxy_list_skeleton.py
+proxy_url_skeleton.py
+proxy.py
+pytest.ini

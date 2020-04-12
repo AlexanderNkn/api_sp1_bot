@@ -11,10 +11,9 @@ import time
 
 import requests
 import telegram
-from telegram.error import TimedOut, NetworkError
 from dotenv import load_dotenv
+from telegram.error import NetworkError, TimedOut
 
-# from proxy import get_raw_proxy_list   это для локальной версии
 from proxy_selenium import get_raw_proxy_list
 
 load_dotenv()
@@ -27,7 +26,7 @@ TIME_NOT_0 = os.getenv('TIME_NOT_0') # можно установить врем�
 NEED_PROXY = os.getenv('need_proxy')
 
 def get_telegram_bot(used_url, raw_proxy_list):
-    '''создаем экземпляр телеграмм бота с одним из прокси из списка'''
+    '''Создает экземпляр телеграмм бота с одним из прокси из списка'''
     # проверка использованного прокси, чтобы не использовать повторно
     if used_url:
         print(f'URL {used_url} больше не работает')
@@ -89,8 +88,10 @@ def get_homework_statuses(current_timestamp):
 
 
 def send_message(message):
-    '''Отправка сообщения через телеграмм бот. В случае неудачной отправки
-    запрашивается новый прокси'''
+    '''
+    Отправка сообщения через телеграмм бот. В случае неудачной отправки
+    запрашивается новый прокси
+    '''
     # отключаем вручную прокси и высылаем сообщение без него 
     if NEED_PROXY == 'False':
         bot = telegram.Bot(token=TELEGRAM_TOKEN)
