@@ -6,26 +6,30 @@
 отображались в зашифрованном виде.
 '''
 import os
-
+from dotenv import load_dotenv
 from selenium import webdriver
 
 from twilio_sms import \
     sms_sender  # импортируем функцию отправки сообщений через твилио
 
-CHROMEDRIVER_PATH = '/app/.chromedriver/bin/chromedriver'
+CHROMEDRIVER_PATH = os.getenv('CHROMEDRIVER_PATH')
 
+load_dotenv()
 options = webdriver.ChromeOptions()
-options.binary_location = os.environ.get('GOOGLE_CHROME_BIN')
 options.add_argument('--disable-gpu')
 options.add_argument('--no-sandbox')
 options.add_argument('--headless')
-
+if CHROMEDRIVER_PATH: # подключаем chromedriver для работы с selenium
+    options.binary_location = os.getenv('GOOGLE_CHROME_BIN')
+    executable_path = CHROMEDRIVER_PATH
+else:                 # подключаем chromedriver для локальной работы
+    executable_path = '/usr/local/bin/chromedriver'
 def parse_proxy_site():
     '''
     Получаем список прокси с сайта без проверки на валидность
     '''
     driver = webdriver.Chrome(
-        executable_path=CHROMEDRIVER_PATH, 
+        executable_path=executable_path, 
         chrome_options=options
     )
     driver.get('http://spys.one/socks/')
